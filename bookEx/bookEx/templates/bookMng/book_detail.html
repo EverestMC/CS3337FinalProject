@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block sidenav %}
+   {% for item in item_list %}
+      <li>
+        <a href="{{ item.link }}">  {{ item.item }} </a>
+      </li>
+   {% endfor %}
+{% endblock sidenav %}
+
+{% block content %}
+   <h1>Book Detail</h1>
+   <table border="2" >
+      <tr>
+          <th>
+              Cover
+          </th>
+          <th>
+              Title
+          </th>
+          <th>
+              Price
+          </th>
+          <th>
+              User Name
+          </th>
+          <th>
+              Post Date
+          </th>
+          <th>
+              Book Web
+          </th>
+      </tr>
+       <tr>
+           <td>
+           <img src="{% static book.pic_path %}" width="100" />
+         </td>
+         <td>
+            {{ book.name }}
+         </td>
+         <td>
+            {{ book.price }}
+         </td>
+          <td>
+            {{ book.username }}
+         </td>
+           <td>
+            {{ book.publishdate }}
+         </td>
+           <td>
+               {{ book.web }}
+           </td>
+      </tr>
+   </table>
+
+<h2>Comments</h2>
+   {% if comments %}
+     <ul style="list-style: none; padding-left: 0;">
+       {% for c in comments %}
+         <li style="margin-bottom: 1rem; border: 1px solid #ddd; padding: .75rem;">
+           <div style="font-weight: bold;">
+             {{ c.author.is_staff|yesno:"Admin,User" }}: {{ c.author.username }}
+             <span style="font-weight: normal; font-size: .9em; color: #666;">
+               • {{ c.created_at|date:"Y-m-d H:i" }}
+             </span>
+           </div>
+           <div style="white-space: pre-wrap; margin-top: .25rem;">
+             {{ c.content }}
+           </div>
+         </li>
+       {% endfor %}
+     </ul>
+   {% else %}
+     <p>No comments yet. Be the first to share your thoughts!</p>
+   {% endif %}
+
+   {% if comment_form and user.is_authenticated %}
+
+     <form method="post" action="{% url 'book_comment' book.id %}">
+       {% csrf_token %}
+       {{ comment_form.non_field_errors }}
+       {{ comment_form.as_p }}
+       <button type="submit">Post Comment</button>
+     </form>
+   {% elif not user.is_authenticated %}
+     <p><a href="{% url 'login' %}">Log in</a> to add a comment.</p>
+   {% endif %}
+{% endblock content %}
+
