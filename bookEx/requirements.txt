@@ -1,0 +1,6 @@
+# Minimal runtime deps for the bookEx project
+Django==5.2.5
+Pillow>=10.0
+asgiref>=3.7
+sqlparse>=0.5
+tzdata>=2023.3  # needed on Windows when pytz isn't present

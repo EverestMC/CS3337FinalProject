@@ -1,90 +1,68 @@
 {% extends "base.html" %}
 {% load static %}
-
-{% block sidenav %}
-   {% for item in item_list %}
-      <li>
-        <a href="{{ item.link }}">  {{ item.item }} </a>
-      </li>
-   {% endfor %}
-{% endblock sidenav %}
-
 {% block content %}
-   <h1>Book Detail</h1>
-   <table border="2" >
-      <tr>
-          <th>
-              Cover
-          </th>
-          <th>
-              Title
-          </th>
-          <th>
-              Price
-          </th>
-          <th>
-              User Name
-          </th>
-          <th>
-              Post Date
-          </th>
-          <th>
-              Book Web
-          </th>
-      </tr>
-       <tr>
-           <td>
-           <img src="{% static book.pic_path %}" width="100" />
-         </td>
-         <td>
-            {{ book.name }}
-         </td>
-         <td>
-            {{ book.price }}
-         </td>
-          <td>
-            {{ book.username }}
-         </td>
-           <td>
-            {{ book.publishdate }}
-         </td>
-           <td>
-               {{ book.web }}
-           </td>
-      </tr>
-   </table>
 
-<h2>Comments</h2>
-   {% if comments %}
-     <ul style="list-style: none; padding-left: 0;">
-       {% for c in comments %}
-         <li style="margin-bottom: 1rem; border: 1px solid #ddd; padding: .75rem;">
-           <div style="font-weight: bold;">
-             {{ c.author.is_staff|yesno:"Admin,User" }}: {{ c.author.username }}
-             <span style="font-weight: normal; font-size: .9em; color: #666;">
-               • {{ c.created_at|date:"Y-m-d H:i" }}
-             </span>
-           </div>
-           <div style="white-space: pre-wrap; margin-top: .25rem;">
-             {{ c.content }}
-           </div>
-         </li>
-       {% endfor %}
-     </ul>
-   {% else %}
-     <p>No comments yet. Be the first to share your thoughts!</p>
-   {% endif %}
+<h1 style="margin-bottom:10px;">{{ book.name }}</h1>
 
-   {% if comment_form and user.is_authenticated %}
+<div style="margin-bottom:8px;">
+  {% if avg_rating %}
+    <strong>Average:</strong> ⭐ {{ avg_rating|floatformat:1 }} ({{ rating_count }} rating{{ rating_count|pluralize }})
+  {% else %}
+    <span style="color:#777;">No rating yet</span>
+  {% endif %}
+</div>
 
-     <form method="post" action="{% url 'book_comment' book.id %}">
-       {% csrf_token %}
-       {{ comment_form.non_field_errors }}
-       {{ comment_form.as_p }}
-       <button type="submit">Post Comment</button>
-     </form>
-   {% elif not user.is_authenticated %}
-     <p><a href="{% url 'login' %}">Log in</a> to add a comment.</p>
-   {% endif %}
-{% endblock content %}
+{% if user.is_authenticated %}
+<form method="post" style="margin:14px 0; padding:10px; border:1px solid #ddd; border-radius:8px;">
+  {% csrf_token %}
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <div>
+      <!-- Render radio inputs as stars -->
+      <div style="direction: rtl; display: inline-flex; cursor: pointer; font-size: 1.8rem;">
+        {% for i in "54321" %}
+          {% with val=i|stringformat:"i" %}
+            <input type="radio" id="star{{ i }}" name="score" value="{{ i }}"
+                   style="display:none;"
+                   {% if user_rating == i|add:""|int %}checked{% endif %}>
+            <label for="star{{ i }}" style="padding:0 3px;">&#9733;</label>
+          {% endwith %}
+        {% endfor %}
+      </div>
+    </div>
+    <button type="submit" style="padding:8px 12px; border-radius:6px; background:#1976d2; color:white; border:0;">
+      Save Rating
+    </button>
+  </div>
+</form>
+{% else %}
+  <p><a href="{% url 'login' %}">Log in</a> to rate this book.</p>
+{% endif %}
 
+<hr style="margin:18px 0;">
+
+<h3>Comments</h3>
+{% if user.is_authenticated %}
+<form method="post" action="{% url 'bookMng:book_comment' book.id %}" style="margin-bottom:16px;">
+  {% csrf_token %}
+  {{ comment_form.as_p }}
+  <button type="submit" style="padding:8px 12px; border-radius:6px; background:#2e7d32; color:white; border:0;">
+    Add Comment
+  </button>
+</form>
+{% else %}
+  <p><a href="{% url 'login' %}">Log in</a> to comment.</p>
+{% endif %}
+
+<ul style="list-style:none; padding-left:0;">
+  {% for c in comments %}
+    <li style="border-bottom:1px solid #eee; padding:8px 0;">
+      <strong>{{ c.author.username }}</strong>
+      <span style="color:#777;">({{ c.author_title }}) • {{ c.created_at|date:"M d, Y H:i" }}</span>
+      <div>{{ c.content }}</div>
+    </li>
+  {% empty %}
+    <li>No comments yet.</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

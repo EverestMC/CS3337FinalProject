@@ -125,3 +125,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'bookEx/static')
 ]
+
+# --- Media files (uploads like book pictures) ---
+from pathlib import Path
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = Path(BASE_DIR) / 'media'

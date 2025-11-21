@@ -1,41 +1,67 @@
 {% extends "base.html" %}
 {% load static %}
-
-{% block sidenav %}
-   {% for item in item_list %}
-      <li>
-        <a href="{{ item.link }}">  {{ item.item }} </a>
-      </li>
-   {% endfor %}
-{% endblock sidenav %}
-
-
 {% block content %}
-   <h1>Display Books</h1>
-   <table border="2" >
-       <tr>
-          <th>
-              Book Name
-          </th>
-          <th>
-              Book Price
-          </th>
-          <th>
-              User Name
-          </th>
-      </tr>
-   {% for book in books %}
-      <tr>
-         <td>
-        <a href="book_detail/{{ book.id }}">  {{ book.name }} </a>
-         </td>
-         <td>
-            $ {{ book.price }}
-         </td>
-          <td>
-            {{ book.username }}
-         </td>
-      </tr>
-   {% endfor %}
-   </table>
-{% endblock content %}
+
+<h1 style="text-align:center; margin-bottom:20px;">Display Books</h1>
+
+<div style="text-align:center; margin-bottom:20px;">
+  {% if showing_favorites %}
+    <a href="{% url 'bookMng:displaybooks' %}"
+       style="background:#ccc; color:#000; padding:10px 20px; border-radius:8px; text-decoration:none;">
+      ← Back to All Books
+    </a>
+  {% else %}
+    <a href="{% url 'bookMng:favorites' %}"
+       style="background:#f4b400; color:#000; padding:10px 20px; border-radius:8px; text-decoration:none;">
+      ⭐ Show Favorites
+    </a>
+  {% endif %}
+</div>
+
+<div style="display:flex; flex-wrap:wrap; gap:18px; justify-content:center;">
+  {% for book in books %}
+  <div style="width:280px; border:1px solid #ddd; border-radius:10px; padding:12px;">
+    <div style="height:180px; display:flex; align-items:center; justify-content:center; background:#fafafa; border-radius:6px; overflow:hidden;">
+      {% if book.pic_url %}
+        <img src="{{ book.pic_url }}" alt="{{ book.name }}" style="max-width:100%; max-height:100%;">
+      {% else %}
+        <div style="color:#777;">No image</div>
+      {% endif %}
+    </div>
+
+    <h3 style="margin:12px 0 6px;">{{ book.name }}</h3>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <div>
+        {% if book.avg_rating %}
+          <span title="Average rating" style="font-weight:600;">⭐ {{ book.avg_rating|floatformat:1 }}</span>
+        {% else %}
+          <span style="color:#777;">No rating yet</span>
+        {% endif %}
+      </div>
+      <div style="color:#666; font-size:.9rem;">
+        {{ book.rating_count }} rating{{ book.rating_count|pluralize }}
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <a href="{% url 'bookMng:book_detail' book.id %}"
+         style="flex:1; text-align:center; background:#1976d2; color:#fff; padding:8px 10px; border-radius:6px; text-decoration:none;">
+        Details
+      </a>
+
+      {% if user.is_authenticated %}
+        <a href="{% url 'bookMng:toggle_favorite' book.id %}"
+           style="width:44px; text-align:center; background:#eee; color:#000; padding:8px 0; border-radius:6px; text-decoration:none;"
+           title="Toggle Favorite">
+           {% if book.is_favorite %}❤️{% else %}🤍{% endif %}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+    <p>No books yet.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}
